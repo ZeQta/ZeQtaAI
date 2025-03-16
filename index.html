@@ -2,63 +2,266 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claude 3.5 Sonnet Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Chatbot Powered by puter.js</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #chat-container { max-width: 600px; margin: auto; }
-    .message { padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-    .user { background-color: #e0f7fa; text-align: right; }
-    .bot { background-color: #f1f8e9; text-align: left; }
-    #input-container { display: flex; margin-top: 20px; }
-    #user-input { flex-grow: 1; padding: 10px; }
-    #send-button { padding: 10px; }
+    /* Reset and basic styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f7f7f8;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Sidebar styles */
+    .sidebar {
+      width: 260px;
+      background-color: #fff;
+      border-right: 1px solid #ddd;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .sidebar h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .sidebar ul { list-style: none; }
+    .sidebar li { padding: 8px 0; border-bottom: 1px solid #eee; cursor: pointer; }
+
+    /* Chat container */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+    .header-actions { display: flex; align-items: center; }
+    .model-switcher {
+      margin-right: 1rem;
+      padding: 6px 8px;
+      font-size: 1rem;
+    }
+    .upload-label {
+      cursor: pointer;
+      background-color: #007bff;
+      padding: 8px 12px;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    /* Chat messages area */
+    .chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      background-color: #f2f2f2;
+    }
+    /* Chat input area */
+    .chat-input-container {
+      padding: 1rem;
+      background-color: #fff;
+      border-top: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-input-container textarea {
+      width: 100%;
+      min-height: 50px;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      font-size: 1rem;
+    }
+    .chat-input-container button {
+      margin-top: 0.5rem;
+      align-self: flex-end;
+      padding: 0.5rem 1rem;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    /* Chat bubble styles */
+    .message { margin-bottom: 1rem; display: flex; }
+    .message.user { justify-content: flex-end; }
+    .message.ai { justify-content: flex-start; }
+    .message .bubble {
+      max-width: 70%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .message.user .bubble {
+      background-color: #007bff;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+    .message.ai .bubble {
+      background-color: #e5e5ea;
+      color: black;
+      border-bottom-left-radius: 0;
+    }
+    /* Responsive design for mobile */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        height: 150px;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+      }
+      .chat-container { flex: 1; }
+    }
   </style>
 </head>
 <body>
-  <div id="chat-container"></div>
-  <div id="input-container">
-    <input type="text" id="user-input" placeholder="Type your message here..." />
-    <button id="send-button">Send</button>
+  <!-- Sidebar with conversation list -->
+  <aside class="sidebar">
+    <h2>Conversations</h2>
+    <button id="new-chat">New Chat</button>
+    <ul id="conversation-list">
+      <!-- Dynamically generated conversation titles can appear here -->
+      <li>Example Chat 1</li>
+      <li>Example Chat 2</li>
+    </ul>
+  </aside>
+
+  <!-- Main chat container -->
+  <div class="chat-container">
+    <header class="chat-header">
+      <div class="header-actions">
+        <!-- Model switcher -->
+        <select id="model-switcher" class="model-switcher">
+          <option value="gpt4o" selected>GPT-4o (Default)</option>
+          <option value="sonnet3.5">Sonnet 3.5</option>
+          <option value="sonnet3.7">Sonnet 3.7</option>
+          <option value="o3mini">o3-mini</option>
+        </select>
+        <!-- File/Image upload trigger -->
+        <label for="file-upload" class="upload-label">Upload File/Image</label>
+        <input type="file" id="file-upload" accept="image/*,.pdf,.doc,.docx" style="display:none;">
+      </div>
+    </header>
+
+    <!-- Chat messages area -->
+    <main class="chat-messages" id="chat-messages">
+      <!-- Chat messages will be dynamically appended here -->
+    </main>
+
+    <!-- Chat input area -->
+    <div class="chat-input-container">
+      <textarea id="chat-input" placeholder="Type your message here..."></textarea>
+      <button id="send-button">Send</button>
+    </div>
   </div>
 
-  <script src="https://js.puter.com/v2/"></script>
   <script>
-    const chatContainer = document.getElementById('chat-container');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
-
-    function addMessage(text, sender) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${sender}`;
-      messageDiv.textContent = text;
-      chatContainer.appendChild(messageDiv);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    // Simulate sending a message and receiving a response based on the selected model.
+    function sendMessage(message, model) {
+      const chatMessages = document.getElementById('chat-messages');
+      
+      // Create user message bubble.
+      const userMessage = document.createElement('div');
+      userMessage.classList.add('message', 'user');
+      const userBubble = document.createElement('div');
+      userBubble.classList.add('bubble');
+      userBubble.textContent = message;
+      userMessage.appendChild(userBubble);
+      chatMessages.appendChild(userMessage);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Simulate an AI response after a short delay.
+      setTimeout(() => {
+        const aiMessage = document.createElement('div');
+        aiMessage.classList.add('message', 'ai');
+        const aiBubble = document.createElement('div');
+        aiBubble.classList.add('bubble');
+        aiBubble.textContent = "Simulated response from " + model;
+        aiMessage.appendChild(aiBubble);
+        chatMessages.appendChild(aiMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 1000);
     }
 
-    async function sendMessage() {
-      const userText = userInput.value.trim();
-      if (!userText) return;
+    // Send message on button click.
+    document.getElementById('send-button').addEventListener('click', () => {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message) return;
+      const model = document.getElementById('model-switcher').value;
+      sendMessage(message, model);
+      input.value = "";
+    });
 
-      addMessage(userText, 'user');
-      userInput.value = '';
-
-      addMessage('Thinking...', 'bot');
-      const botMessages = document.getElementsByClassName('bot');
-      const lastBotMessage = botMessages[botMessages.length - 1];
-
-      try {
-        const response = await puter.ai.chat(userText, { model: 'claude-3-5-sonnet' });
-        lastBotMessage.textContent = response.message.content[0].text;
-      } catch (error) {
-        lastBotMessage.textContent = 'Oops! Something went wrong.';
-        console.error(error);
+    // Allow sending message via Enter key (with Shift+Enter for new lines).
+    document.getElementById('chat-input').addEventListener('keydown', (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('send-button').click();
       }
-    }
+    });
 
-    sendButton.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
+    // Handle file upload and simulate GPT-4 Vision analysis.
+    document.getElementById('file-upload').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Read the file (using DataURL for images; text for other file types).
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const chatMessages = document.getElementById('chat-messages');
+        const fileMessage = document.createElement('div');
+        fileMessage.classList.add('message', 'user');
+        const fileBubble = document.createElement('div');
+        fileBubble.classList.add('bubble');
+        fileBubble.textContent = "Uploaded file: " + file.name;
+        fileMessage.appendChild(fileBubble);
+        chatMessages.appendChild(fileMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Simulate a response from GPT-4 Vision after file analysis.
+        setTimeout(() => {
+          const aiMessage = document.createElement('div');
+          aiMessage.classList.add('message', 'ai');
+          const aiBubble = document.createElement('div');
+          aiBubble.classList.add('bubble');
+          aiBubble.textContent = "Analyzed " + file.name + ": [Simulated analysis result]";
+          aiMessage.appendChild(aiBubble);
+          chatMessages.appendChild(aiMessage);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1500);
+      };
+
+      if (file.type.startsWith("image/")) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.readAsText(file);
+      }
+    });
+
+    // "New Chat" resets the conversation area.
+    document.getElementById('new-chat').addEventListener('click', () => {
+      document.getElementById('chat-messages').innerHTML = "";
     });
   </script>
 </body>
