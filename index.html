@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AI Chatbot Powered by puter.js</title>
+  <title>Puter.js Chatbot</title>
+  <!-- Include Puter.js -->
+  <script src="https://js.puter.com/v2/"></script>
   <style>
-    /* Reset and basic styles */
+    /* Reset & basic styles */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -14,7 +16,7 @@
       height: 100vh;
       overflow: hidden;
     }
-    /* Sidebar styles */
+    /* Sidebar */
     .sidebar {
       width: 260px;
       background-color: #fff;
@@ -35,8 +37,11 @@
       font-size: 1rem;
     }
     .sidebar ul { list-style: none; }
-    .sidebar li { padding: 8px 0; border-bottom: 1px solid #eee; cursor: pointer; }
-
+    .sidebar li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
     /* Chat container */
     .chat-container {
       flex: 1;
@@ -51,7 +56,10 @@
       background-color: #fff;
       border-bottom: 1px solid #ddd;
     }
-    .header-actions { display: flex; align-items: center; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+    }
     .model-switcher {
       margin-right: 1rem;
       padding: 6px 8px;
@@ -100,8 +108,11 @@
       cursor: pointer;
       font-size: 1rem;
     }
-    /* Chat bubble styles */
-    .message { margin-bottom: 1rem; display: flex; }
+    /* Chat bubbles */
+    .message {
+      margin-bottom: 1rem;
+      display: flex;
+    }
     .message.user { justify-content: flex-end; }
     .message.ai { justify-content: flex-start; }
     .message .bubble {
@@ -135,27 +146,26 @@
   </style>
 </head>
 <body>
-  <!-- Sidebar with conversation list -->
+  <!-- Sidebar (Conversations) -->
   <aside class="sidebar">
     <h2>Conversations</h2>
     <button id="new-chat">New Chat</button>
     <ul id="conversation-list">
-      <!-- Dynamically generated conversation titles can appear here -->
       <li>Example Chat 1</li>
       <li>Example Chat 2</li>
     </ul>
   </aside>
 
-  <!-- Main chat container -->
+  <!-- Main Chat Container -->
   <div class="chat-container">
     <header class="chat-header">
       <div class="header-actions">
         <!-- Model switcher -->
         <select id="model-switcher" class="model-switcher">
-          <option value="gpt4o" selected>GPT-4o (Default)</option>
+          <option value="gpt4o" selected>GPT‑4o (Default)</option>
           <option value="sonnet3.5">Sonnet 3.5</option>
           <option value="sonnet3.7">Sonnet 3.7</option>
-          <option value="o3mini">o3-mini</option>
+          <option value="o3-mini">o3‑mini</option>
         </select>
         <!-- File/Image upload trigger -->
         <label for="file-upload" class="upload-label">Upload File/Image</label>
@@ -163,12 +173,10 @@
       </div>
     </header>
 
-    <!-- Chat messages area -->
     <main class="chat-messages" id="chat-messages">
-      <!-- Chat messages will be dynamically appended here -->
+      <!-- Chat messages will be appended here -->
     </main>
 
-    <!-- Chat input area -->
     <div class="chat-input-container">
       <textarea id="chat-input" placeholder="Type your message here..."></textarea>
       <button id="send-button">Send</button>
@@ -176,44 +184,58 @@
   </div>
 
   <script>
-    // Simulate sending a message and receiving a response based on the selected model.
-    function sendMessage(message, model) {
-      const chatMessages = document.getElementById('chat-messages');
-      
-      // Create user message bubble.
-      const userMessage = document.createElement('div');
-      userMessage.classList.add('message', 'user');
-      const userBubble = document.createElement('div');
-      userBubble.classList.add('bubble');
-      userBubble.textContent = message;
-      userMessage.appendChild(userBubble);
-      chatMessages.appendChild(userMessage);
+    // Map UI model names to Puter.js model identifiers.
+    const modelMap = {
+      "gpt4o": "gpt4o",
+      "sonnet3.5": "claude-3-5-sonnet",
+      "sonnet3.7": "claude-3-7-sonnet", // (assumed identifier)
+      "o3-mini": "gpt4o-mini"
+    };
+
+    const chatMessages = document.getElementById('chat-messages');
+
+    // Append a chat bubble to the chat area.
+    function appendMessage(sender, text) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message', sender);
+      const bubbleDiv = document.createElement('div');
+      bubbleDiv.classList.add('bubble');
+      bubbleDiv.textContent = text;
+      messageDiv.appendChild(bubbleDiv);
+      chatMessages.appendChild(messageDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
-      
-      // Simulate an AI response after a short delay.
-      setTimeout(() => {
-        const aiMessage = document.createElement('div');
-        aiMessage.classList.add('message', 'ai');
-        const aiBubble = document.createElement('div');
-        aiBubble.classList.add('bubble');
-        aiBubble.textContent = "Simulated response from " + model;
-        aiMessage.appendChild(aiBubble);
-        chatMessages.appendChild(aiMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }, 1000);
     }
 
-    // Send message on button click.
+    // Send a chat message via Puter.js.
+    async function sendChatMessage(message) {
+      // Append user's message.
+      appendMessage('user', message);
+
+      // Get selected model and map it.
+      const uiModel = document.getElementById('model-switcher').value;
+      const model = modelMap[uiModel] || "gpt4o"; // default to GPT-4o
+
+      try {
+        // Call puter.ai.chat with the prompt and chosen model.
+        const response = await puter.ai.chat(message, { model });
+        // Extract text (assuming response.message.content[0].text exists).
+        const reply = (response.message && response.message.content && response.message.content[0].text) || response;
+        appendMessage('ai', reply);
+      } catch (error) {
+        appendMessage('ai', "Error: " + error.message);
+      }
+    }
+
+    // Event listener for send button.
     document.getElementById('send-button').addEventListener('click', () => {
       const input = document.getElementById('chat-input');
       const message = input.value.trim();
       if (!message) return;
-      const model = document.getElementById('model-switcher').value;
-      sendMessage(message, model);
+      sendChatMessage(message);
       input.value = "";
     });
 
-    // Allow sending message via Enter key (with Shift+Enter for new lines).
+    // Allow sending message on Enter (with Shift+Enter for newline).
     document.getElementById('chat-input').addEventListener('keydown', (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -221,47 +243,45 @@
       }
     });
 
-    // Handle file upload and simulate GPT-4 Vision analysis.
-    document.getElementById('file-upload').addEventListener('change', (e) => {
+    // Handle file/image upload.
+    document.getElementById('file-upload').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      
-      // Read the file (using DataURL for images; text for other file types).
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const chatMessages = document.getElementById('chat-messages');
-        const fileMessage = document.createElement('div');
-        fileMessage.classList.add('message', 'user');
-        const fileBubble = document.createElement('div');
-        fileBubble.classList.add('bubble');
-        fileBubble.textContent = "Uploaded file: " + file.name;
-        fileMessage.appendChild(fileBubble);
-        chatMessages.appendChild(fileMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Simulate a response from GPT-4 Vision after file analysis.
-        setTimeout(() => {
-          const aiMessage = document.createElement('div');
-          aiMessage.classList.add('message', 'ai');
-          const aiBubble = document.createElement('div');
-          aiBubble.classList.add('bubble');
-          aiBubble.textContent = "Analyzed " + file.name + ": [Simulated analysis result]";
-          aiMessage.appendChild(aiBubble);
-          chatMessages.appendChild(aiMessage);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 1500);
-      };
 
-      if (file.type.startsWith("image/")) {
-        reader.readAsDataURL(file);
-      } else {
-        reader.readAsText(file);
+      // Display a message indicating file upload.
+      appendMessage('user', "Uploaded file: " + file.name);
+
+      try {
+        // Upload file to Puter cloud storage.
+        const uploaded = await puter.fs.upload(e.target.files);
+        // Decide analysis based on file type.
+        if (file.type.startsWith("image/")) {
+          // For images, call GPT-4 Vision: pass the uploaded file path as the second parameter.
+          const response = await puter.ai.chat("What do you see in this image?", uploaded.path);
+          const analysis = (response.message && response.message.content && response.message.content[0].text) || response;
+          appendMessage('ai', "Image Analysis: " + analysis);
+        } else {
+          // For non-images, read file content as text.
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const fileContent = reader.result;
+            // Ask Puter.js to analyze the file content.
+            const response = await puter.ai.chat("Please analyze this file content: " + fileContent, { model: modelMap["gpt4o"] });
+            const analysis = (response.message && response.message.content && response.message.content[0].text) || response;
+            appendMessage('ai', "File Analysis: " + analysis);
+          };
+          reader.readAsText(file);
+        }
+      } catch (error) {
+        appendMessage('ai', "File upload/analysis error: " + error.message);
       }
+      // Reset the file input.
+      e.target.value = "";
     });
 
-    // "New Chat" resets the conversation area.
+    // "New Chat" button resets the conversation.
     document.getElementById('new-chat').addEventListener('click', () => {
-      document.getElementById('chat-messages').innerHTML = "";
+      chatMessages.innerHTML = "";
     });
   </script>
 </body>
