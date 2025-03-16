@@ -1,152 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Puter.js Chatbot</title>
   <!-- Include Puter.js -->
   <script src="https://js.puter.com/v2/"></script>
   <style>
-    /* Reset & basic styles */
+    /* Base Reset & iOS-style typography */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f7f7f8;
+      background-color: #f2f2f7;
       display: flex;
       height: 100vh;
       overflow: hidden;
     }
-    /* Sidebar */
+    /* Sidebar: Official, clean, and modern */
     .sidebar {
       width: 260px;
-      background-color: #fff;
-      border-right: 1px solid #ddd;
+      background-color: #ffffff;
+      border-right: 1px solid #d1d1d6;
       padding: 1rem;
       overflow-y: auto;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
     }
-    .sidebar h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+    .sidebar h2 { font-size: 1.2rem; margin-bottom: 1rem; color: #1c1c1e; }
     .sidebar button {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
       border: none;
-      background-color: #007bff;
+      background-color: #007aff;
       color: white;
-      border-radius: 4px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 1rem;
+      transition: background-color 0.2s ease;
+    }
+    .sidebar button:hover {
+      background-color: #005ecb;
     }
     .sidebar ul { list-style: none; }
     .sidebar li {
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+      border-bottom: 1px solid #d1d1d6;
       cursor: pointer;
+      color: #3a3a3c;
     }
-    /* Chat container */
+    /* Main Chat Container */
     .chat-container {
       flex: 1;
       display: flex;
       flex-direction: column;
+      background-color: #f2f2f7;
     }
     .chat-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem;
-      background-color: #fff;
-      border-bottom: 1px solid #ddd;
+      padding: 16px;
+      background-color: #ffffff;
+      border-bottom: 1px solid #d1d1d6;
     }
     .header-actions {
       display: flex;
       align-items: center;
     }
     .model-switcher {
-      margin-right: 1rem;
-      padding: 6px 8px;
+      margin-right: 12px;
+      padding: 8px 10px;
       font-size: 1rem;
+      border: 1px solid #d1d1d6;
+      border-radius: 8px;
+      background-color: #ffffff;
+      color: #1c1c1e;
     }
     .upload-label {
       cursor: pointer;
-      background-color: #007bff;
-      padding: 8px 12px;
+      background-color: #007aff;
+      padding: 10px 14px;
       color: white;
-      border-radius: 4px;
-      font-size: 0.9rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: background-color 0.2s ease;
     }
+    .upload-label:hover { background-color: #005ecb; }
     /* Chat messages area */
     .chat-messages {
       flex: 1;
-      padding: 1rem;
+      padding: 16px;
       overflow-y: auto;
-      background-color: #f2f2f2;
+      background-color: #f2f2f7;
     }
     /* Chat input area */
     .chat-input-container {
-      padding: 1rem;
-      background-color: #fff;
-      border-top: 1px solid #ddd;
+      padding: 16px;
+      background-color: #ffffff;
+      border-top: 1px solid #d1d1d6;
       display: flex;
       flex-direction: column;
     }
     .chat-input-container textarea {
       width: 100%;
       min-height: 50px;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      padding: 10px;
+      border: 1px solid #d1d1d6;
+      border-radius: 10px;
       resize: vertical;
       font-size: 1rem;
+      color: #1c1c1e;
     }
     .chat-input-container button {
-      margin-top: 0.5rem;
+      margin-top: 8px;
       align-self: flex-end;
-      padding: 0.5rem 1rem;
-      background-color: #007bff;
+      padding: 10px 20px;
+      background-color: #007aff;
       border: none;
       color: white;
-      border-radius: 4px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 1rem;
+      transition: background-color 0.2s ease;
     }
-    /* Chat bubbles */
-    .message {
-      margin-bottom: 1rem;
-      display: flex;
-    }
+    .chat-input-container button:hover { background-color: #005ecb; }
+    /* Chat bubble styles */
+    .message { margin-bottom: 12px; display: flex; }
     .message.user { justify-content: flex-end; }
     .message.ai { justify-content: flex-start; }
     .message .bubble {
-      max-width: 70%;
-      padding: 0.75rem;
-      border-radius: 8px;
+      max-width: 75%;
+      padding: 12px;
+      border-radius: 16px;
       font-size: 0.95rem;
-      line-height: 1.4;
+      line-height: 1.5;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .message.user .bubble {
-      background-color: #007bff;
-      color: white;
-      border-bottom-right-radius: 0;
+      background-color: #007aff;
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
     }
     .message.ai .bubble {
       background-color: #e5e5ea;
-      color: black;
-      border-bottom-left-radius: 0;
+      color: #1c1c1e;
+      border-bottom-left-radius: 4px;
     }
-    /* Responsive design for mobile */
+    /* Responsive for mobile devices */
     @media (max-width: 768px) {
       body { flex-direction: column; }
       .sidebar {
         width: 100%;
         height: 150px;
         border-right: none;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid #d1d1d6;
+        box-shadow: none;
       }
       .chat-container { flex: 1; }
     }
   </style>
 </head>
 <body>
-  <!-- Sidebar (Conversations) -->
+  <!-- Sidebar for Conversations -->
   <aside class="sidebar">
     <h2>Conversations</h2>
     <button id="new-chat">New Chat</button>
@@ -156,16 +171,15 @@
     </ul>
   </aside>
 
-  <!-- Main Chat Container -->
+  <!-- Main Chat Area -->
   <div class="chat-container">
     <header class="chat-header">
       <div class="header-actions">
-        <!-- Model switcher -->
+        <!-- Model switcher: Updated default is OpenAI-o3-mini -->
         <select id="model-switcher" class="model-switcher">
-          <option value="gpt4o" selected>GPT‑4o (Default)</option>
+          <option value="openai-o3-mini" selected>OpenAI‑o3‑mini (Default)</option>
           <option value="sonnet3.5">Sonnet 3.5</option>
           <option value="sonnet3.7">Sonnet 3.7</option>
-          <option value="o3-mini">o3‑mini</option>
         </select>
         <!-- File/Image upload trigger -->
         <label for="file-upload" class="upload-label">Upload File/Image</label>
@@ -174,7 +188,7 @@
     </header>
 
     <main class="chat-messages" id="chat-messages">
-      <!-- Chat messages will be appended here -->
+      <!-- Chat messages will appear here -->
     </main>
 
     <div class="chat-input-container">
@@ -186,15 +200,14 @@
   <script>
     // Map UI model names to Puter.js model identifiers.
     const modelMap = {
-      "gpt4o": "gpt4o",
+      "openai-o3-mini": "openai-o3-mini",
       "sonnet3.5": "claude-3-5-sonnet",
-      "sonnet3.7": "claude-3-7-sonnet", // (assumed identifier)
-      "o3-mini": "gpt4o-mini"
+      "sonnet3.7": "claude-3-7-sonnet"
     };
 
     const chatMessages = document.getElementById('chat-messages');
 
-    // Append a chat bubble to the chat area.
+    // Append a chat bubble to the messages area.
     function appendMessage(sender, text) {
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('message', sender);
@@ -213,12 +226,11 @@
 
       // Get selected model and map it.
       const uiModel = document.getElementById('model-switcher').value;
-      const model = modelMap[uiModel] || "gpt4o"; // default to GPT-4o
+      const model = modelMap[uiModel] || "openai-o3-mini";
 
       try {
-        // Call puter.ai.chat with the prompt and chosen model.
+        // Use puter.ai.chat with the prompt and chosen model.
         const response = await puter.ai.chat(message, { model });
-        // Extract text (assuming response.message.content[0].text exists).
         const reply = (response.message && response.message.content && response.message.content[0].text) || response;
         appendMessage('ai', reply);
       } catch (error) {
@@ -226,7 +238,7 @@
       }
     }
 
-    // Event listener for send button.
+    // Send message on button click.
     document.getElementById('send-button').addEventListener('click', () => {
       const input = document.getElementById('chat-input');
       const message = input.value.trim();
@@ -235,7 +247,7 @@
       input.value = "";
     });
 
-    // Allow sending message on Enter (with Shift+Enter for newline).
+    // Allow Enter key to send messages (Shift+Enter for newline).
     document.getElementById('chat-input').addEventListener('keydown', (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -243,30 +255,27 @@
       }
     });
 
-    // Handle file/image upload.
+    // Handle file/image uploads.
     document.getElementById('file-upload').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      // Display a message indicating file upload.
       appendMessage('user', "Uploaded file: " + file.name);
 
       try {
         // Upload file to Puter cloud storage.
         const uploaded = await puter.fs.upload(e.target.files);
-        // Decide analysis based on file type.
+        // For images, use GPT-4 Vision style analysis.
         if (file.type.startsWith("image/")) {
-          // For images, call GPT-4 Vision: pass the uploaded file path as the second parameter.
           const response = await puter.ai.chat("What do you see in this image?", uploaded.path);
           const analysis = (response.message && response.message.content && response.message.content[0].text) || response;
           appendMessage('ai', "Image Analysis: " + analysis);
         } else {
-          // For non-images, read file content as text.
+          // For non-image files, read content as text.
           const reader = new FileReader();
           reader.onload = async () => {
             const fileContent = reader.result;
-            // Ask Puter.js to analyze the file content.
-            const response = await puter.ai.chat("Please analyze this file content: " + fileContent, { model: modelMap["gpt4o"] });
+            const response = await puter.ai.chat("Please analyze this file content: " + fileContent, { model: modelMap["openai-o3-mini"] });
             const analysis = (response.message && response.message.content && response.message.content[0].text) || response;
             appendMessage('ai', "File Analysis: " + analysis);
           };
@@ -275,11 +284,10 @@
       } catch (error) {
         appendMessage('ai', "File upload/analysis error: " + error.message);
       }
-      // Reset the file input.
       e.target.value = "";
     });
 
-    // "New Chat" button resets the conversation.
+    // "New Chat" button clears the conversation.
     document.getElementById('new-chat').addEventListener('click', () => {
       chatMessages.innerHTML = "";
     });
