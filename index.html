@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Chatbot with Puter.js</title>
+  <title>Claude 3.5 Sonnet Chatbot</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     #chat-container { max-width: 600px; margin: auto; }
@@ -48,8 +48,8 @@
       const lastBotMessage = botMessages[botMessages.length - 1];
 
       try {
-        const response = await puter.ai.chat(userText);
-        lastBotMessage.textContent = response;
+        const response = await puter.ai.chat(userText, { model: 'claude-3-5-sonnet' });
+        lastBotMessage.textContent = response.message.content[0].text;
       } catch (error) {
         lastBotMessage.textContent = 'Oops! Something went wrong.';
         console.error(error);
