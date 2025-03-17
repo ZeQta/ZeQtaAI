@@ -1,295 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Puter.js Chatbot</title>
-  <!-- Include Puter.js -->
-  <script src="https://js.puter.com/v2/"></script>
+  <meta charset="UTF-8">
+  <title>ZeQta Copilot</title>
   <style>
-    /* Base Reset & iOS-style typography */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Basic reset and styling */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f2f2f7;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f3f3f3;
     }
-    /* Sidebar: Official, clean, and modern */
-    .sidebar {
-      width: 260px;
-      background-color: #ffffff;
-      border-right: 1px solid #d1d1d6;
-      padding: 1rem;
-      overflow-y: auto;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-    }
-    .sidebar h2 { font-size: 1.2rem; margin-bottom: 1rem; color: #1c1c1e; }
-    .sidebar button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border: none;
-      background-color: #007aff;
-      color: white;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.2s ease;
-    }
-    .sidebar button:hover {
-      background-color: #005ecb;
-    }
-    .sidebar ul { list-style: none; }
-    .sidebar li {
-      padding: 10px 0;
-      border-bottom: 1px solid #d1d1d6;
-      cursor: pointer;
-      color: #3a3a3c;
-    }
-    /* Main Chat Container */
     .chat-container {
-      flex: 1;
+      width: 90%;
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
-      background-color: #f2f2f7;
+      height: 80vh;
+      overflow: hidden;
     }
-    .chat-header {
+    .header {
+      background-color: #0078d4;
+      color: #fff;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px;
-      background-color: #ffffff;
-      border-bottom: 1px solid #d1d1d6;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
     }
-    .header-actions {
+    .header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .controls {
       display: flex;
+      gap: 8px;
       align-items: center;
     }
-    .model-switcher {
-      margin-right: 12px;
-      padding: 8px 10px;
-      font-size: 1rem;
-      border: 1px solid #d1d1d6;
-      border-radius: 8px;
-      background-color: #ffffff;
-      color: #1c1c1e;
-    }
-    .upload-label {
+    .controls button,
+    .controls select {
+      font-size: 14px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
-      background-color: #007aff;
-      padding: 10px 14px;
-      color: white;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      transition: background-color 0.2s ease;
     }
-    .upload-label:hover { background-color: #005ecb; }
-    /* Chat messages area */
-    .chat-messages {
+    .controls button {
+      background-color: #005a9e;
+      color: #fff;
+    }
+    .controls select {
+      background-color: #fff;
+      color: #333;
+    }
+    .chat-history {
       flex: 1;
       padding: 16px;
+      background-color: #fafafa;
       overflow-y: auto;
-      background-color: #f2f2f7;
     }
-    /* Chat input area */
-    .chat-input-container {
-      padding: 16px;
-      background-color: #ffffff;
-      border-top: 1px solid #d1d1d6;
+    .chat-message {
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .chat-message.user {
+      background-color: #e1f5fe;
+      margin-left: auto;
+      text-align: right;
+    }
+    .chat-message.bot {
+      background-color: #fff3e0;
+      margin-right: auto;
+      text-align: left;
+    }
+    .input-area {
       display: flex;
-      flex-direction: column;
+      border-top: 1px solid #ddd;
     }
-    .chat-input-container textarea {
-      width: 100%;
-      min-height: 50px;
-      padding: 10px;
-      border: 1px solid #d1d1d6;
-      border-radius: 10px;
-      resize: vertical;
-      font-size: 1rem;
-      color: #1c1c1e;
-    }
-    .chat-input-container button {
-      margin-top: 8px;
-      align-self: flex-end;
-      padding: 10px 20px;
-      background-color: #007aff;
-      border: none;
-      color: white;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.2s ease;
-    }
-    .chat-input-container button:hover { background-color: #005ecb; }
-    /* Chat bubble styles */
-    .message { margin-bottom: 12px; display: flex; }
-    .message.user { justify-content: flex-end; }
-    .message.ai { justify-content: flex-start; }
-    .message .bubble {
-      max-width: 75%;
+    .input-area input {
+      flex: 1;
       padding: 12px;
-      border-radius: 16px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: none;
+      font-size: 16px;
+      outline: none;
     }
-    .message.user .bubble {
-      background-color: #007aff;
-      color: #ffffff;
-      border-bottom-right-radius: 4px;
-    }
-    .message.ai .bubble {
-      background-color: #e5e5ea;
-      color: #1c1c1e;
-      border-bottom-left-radius: 4px;
-    }
-    /* Responsive for mobile devices */
-    @media (max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar {
-        width: 100%;
-        height: 150px;
-        border-right: none;
-        border-bottom: 1px solid #d1d1d6;
-        box-shadow: none;
-      }
-      .chat-container { flex: 1; }
+    .input-area button {
+      padding: 0 20px;
+      background-color: #0078d4;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
     }
   </style>
+  <!-- Include Puter.js -->
+  <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
-  <!-- Sidebar for Conversations -->
-  <aside class="sidebar">
-    <h2>Conversations</h2>
-    <button id="new-chat">New Chat</button>
-    <ul id="conversation-list">
-      <li>Example Chat 1</li>
-      <li>Example Chat 2</li>
-    </ul>
-  </aside>
-
-  <!-- Main Chat Area -->
   <div class="chat-container">
-    <header class="chat-header">
-      <div class="header-actions">
-        <!-- Model switcher: Updated default is OpenAI-o3-mini -->
-        <select id="model-switcher" class="model-switcher">
-          <option value="openai-o3-mini" selected>OpenAI‑o3‑mini (Default)</option>
-          <option value="sonnet3.5">Sonnet 3.5</option>
-          <option value="sonnet3.7">Sonnet 3.7</option>
+    <div class="header">
+      <h1>ZeQta Copilot</h1>
+      <div class="controls">
+        <button id="newChatBtn">New Chat</button>
+        <select id="modelSelect">
+          <!-- Text Generation Models -->
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
+          <option value="llama">Llama</option>
+          <option value="deepseek-chat">DeepSeek Chat</option>
+          <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+          <option value="o3-mini">o3-mini</option>
+          <!-- Advanced / Alternative Models -->
+          <option value="gemini-2-0-flash">Gemini 2.0 Flash</option>
+          <!-- Image Generation (if needed, you might handle these separately) -->
+          <option value="dall-e-3">DALL·E 3 (Image)</option>
         </select>
-        <!-- File/Image upload trigger -->
-        <label for="file-upload" class="upload-label">Upload File/Image</label>
-        <input type="file" id="file-upload" accept="image/*,.pdf,.doc,.docx" style="display:none;">
       </div>
-    </header>
-
-    <main class="chat-messages" id="chat-messages">
-      <!-- Chat messages will appear here -->
-    </main>
-
-    <div class="chat-input-container">
-      <textarea id="chat-input" placeholder="Type your message here..."></textarea>
-      <button id="send-button">Send</button>
+    </div>
+    <div id="chatHistory" class="chat-history">
+      <!-- Chat history messages will be appended here -->
+    </div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+      <button id="sendBtn">Send</button>
     </div>
   </div>
 
   <script>
-    // Map UI model names to Puter.js model identifiers.
-    const modelMap = {
-      "openai-o3-mini": "openai-o3-mini",
-      "sonnet3.5": "claude-3-5-sonnet",
-      "sonnet3.7": "claude-3-7-sonnet"
-    };
+    // Hold conversation history (if you want to extend to context-based queries)
+    let conversation = [];
+    const chatHistoryDiv = document.getElementById('chatHistory');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
+    const modelSelect = document.getElementById('modelSelect');
 
-    const chatMessages = document.getElementById('chat-messages');
-
-    // Append a chat bubble to the messages area.
+    // Append message to chat UI
     function appendMessage(sender, text) {
       const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message', sender);
-      const bubbleDiv = document.createElement('div');
-      bubbleDiv.classList.add('bubble');
-      bubbleDiv.textContent = text;
-      messageDiv.appendChild(bubbleDiv);
-      chatMessages.appendChild(messageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      messageDiv.classList.add('chat-message', sender);
+      messageDiv.textContent = text;
+      chatHistoryDiv.appendChild(messageDiv);
+      chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
     }
 
-    // Send a chat message via Puter.js.
-    async function sendChatMessage(message) {
-      // Append user's message.
-      appendMessage('user', message);
+    // Function to send a message
+    function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
 
-      // Get selected model and map it.
-      const uiModel = document.getElementById('model-switcher').value;
-      const model = modelMap[uiModel] || "openai-o3-mini";
+      // Append user message and clear input
+      appendMessage('user', text);
+      conversation.push({ role: 'user', content: text });
+      userInput.value = '';
 
-      try {
-        // Use puter.ai.chat with the prompt and chosen model.
-        const response = await puter.ai.chat(message, { model });
-        const reply = (response.message && response.message.content && response.message.content[0].text) || response;
-        appendMessage('ai', reply);
-      } catch (error) {
-        appendMessage('ai', "Error: " + error.message);
+      // Get the selected model from the dropdown
+      const selectedModel = modelSelect.value;
+
+      // Show a temporary bot "thinking" message
+      appendMessage('bot', '...');
+      
+      // Determine if the selected model is for image generation or text
+      if(selectedModel === 'dall-e-3') {
+        // For image generation using DALL·E 3:
+        puter.ai.image(text, { model: selectedModel }).then(imageUrl => {
+          // Remove the temporary message
+          chatHistoryDiv.removeChild(chatHistoryDiv.lastChild);
+          // Append image result as a clickable link or an image element
+          const imgElem = document.createElement('img');
+          imgElem.src = imageUrl;
+          imgElem.alt = "Generated Image";
+          imgElem.style.maxWidth = "100%";
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('chat-message', 'bot');
+          messageDiv.appendChild(imgElem);
+          chatHistoryDiv.appendChild(messageDiv);
+          chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+          conversation.push({ role: 'bot', content: '[Image generated]' });
+        }).catch(err => {
+          chatHistoryDiv.removeChild(chatHistoryDiv.lastChild);
+          appendMessage('bot', 'Error: ' + err.message);
+        });
+      } else {
+        // For text-based models:
+        puter.ai.chat(text, { model: selectedModel }).then(response => {
+          // Remove the temporary "..." message
+          chatHistoryDiv.removeChild(chatHistoryDiv.lastChild);
+          const botResponse = response.message.content;
+          appendMessage('bot', botResponse);
+          conversation.push({ role: 'bot', content: botResponse });
+        }).catch(err => {
+          chatHistoryDiv.removeChild(chatHistoryDiv.lastChild);
+          appendMessage('bot', 'Error: ' + err.message);
+        });
       }
     }
 
-    // Send message on button click.
-    document.getElementById('send-button').addEventListener('click', () => {
-      const input = document.getElementById('chat-input');
-      const message = input.value.trim();
-      if (!message) return;
-      sendChatMessage(message);
-      input.value = "";
+    // Event listeners
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendMessage();
     });
-
-    // Allow Enter key to send messages (Shift+Enter for newline).
-    document.getElementById('chat-input').addEventListener('keydown', (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        document.getElementById('send-button').click();
-      }
-    });
-
-    // Handle file/image uploads.
-    document.getElementById('file-upload').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      appendMessage('user', "Uploaded file: " + file.name);
-
-      try {
-        // Upload file to Puter cloud storage.
-        const uploaded = await puter.fs.upload(e.target.files);
-        // For images, use GPT-4 Vision style analysis.
-        if (file.type.startsWith("image/")) {
-          const response = await puter.ai.chat("What do you see in this image?", uploaded.path);
-          const analysis = (response.message && response.message.content && response.message.content[0].text) || response;
-          appendMessage('ai', "Image Analysis: " + analysis);
-        } else {
-          // For non-image files, read content as text.
-          const reader = new FileReader();
-          reader.onload = async () => {
-            const fileContent = reader.result;
-            const response = await puter.ai.chat("Please analyze this file content: " + fileContent, { model: modelMap["openai-o3-mini"] });
-            const analysis = (response.message && response.message.content && response.message.content[0].text) || response;
-            appendMessage('ai', "File Analysis: " + analysis);
-          };
-          reader.readAsText(file);
-        }
-      } catch (error) {
-        appendMessage('ai', "File upload/analysis error: " + error.message);
-      }
-      e.target.value = "";
-    });
-
-    // "New Chat" button clears the conversation.
-    document.getElementById('new-chat').addEventListener('click', () => {
-      chatMessages.innerHTML = "";
+    newChatBtn.addEventListener('click', function() {
+      // Clear conversation history and UI
+      conversation = [];
+      chatHistoryDiv.innerHTML = '';
     });
   </script>
 </body>
