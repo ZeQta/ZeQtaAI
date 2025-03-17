@@ -4,27 +4,27 @@
   <meta charset="UTF-8" />
   <title>ZeQta Copilot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Basic Reset & Global Styles -->
+
   <style>
+    /* Reset & Global Styles */
     * {
-      margin: 0; 
-      padding: 0; 
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
     html, body {
       height: 100%;
-      background-color: #101828; /* Dark background */
+      background: linear-gradient(135deg, #0f172a, #1e293b);
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overflow: hidden; /* Avoid scroll bars on body */
+      overflow: hidden;
     }
     body {
       display: flex;
       flex-direction: column;
     }
-
-    /* Top bar */
+    
+    /* Top Bar */
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -37,92 +37,102 @@
       height: 28px;
       cursor: pointer;
     }
-    .menu-icon {
-      background: url('data:image/svg+xml;utf8,<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g fill="%23FFFFFF"><rect x="3" y="5" width="18" height="2"/><rect x="3" y="11" width="18" height="2"/><rect x="3" y="17" width="18" height="2"/></g></svg>') no-repeat center;
+    .menu-icon,
+    .share-icon {
       background-size: contain;
+      background-repeat: no-repeat;
+    }
+    .menu-icon {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23fff" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="2"/><rect x="3" y="11" width="18" height="2"/><rect x="3" y="17" width="18" height="2"/></svg>');
     }
     .share-icon {
-      background: url('data:image/svg+xml;utf8,<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g fill="%23FFFFFF"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></svg>') no-repeat center;
-      background-size: contain;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23fff" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>');
     }
-
-    /* Main chat area */
-    .chat-area {
+    
+    /* Main Container */
+    .main-container {
       display: flex;
       flex-direction: column;
-      flex: 1; /* Fill remaining space */
+      flex: 1;
+      padding: 0 16px 16px;
       overflow: hidden;
-      padding: 0 16px 16px; /* side + bottom padding */
     }
+    
+    /* Greeting */
+    .big-greeting {
+      font-size: 2.4rem;
+      font-weight: 500;
+      line-height: 1.3;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+      transition: opacity 0.4s ease, max-height 0.4s ease;
+      max-height: 80px;
+      overflow: hidden;
+    }
+    
+    /* Messages Area */
     .messages {
       flex: 1;
       overflow-y: auto;
-      padding-right: 8px; /* small spacing on the right to avoid scrollbar overlap */
-      margin-bottom: 12px; 
-      scrollbar-width: thin; 
-      scrollbar-color: #374151 #101828;
+      padding-right: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: #2e3338 transparent;
     }
     .messages::-webkit-scrollbar {
       width: 6px;
     }
     .messages::-webkit-scrollbar-track {
-      background: #101828;
+      background: transparent;
     }
     .messages::-webkit-scrollbar-thumb {
-      background-color: #374151;
+      background-color: #2e3338;
       border-radius: 10px;
     }
-
-    /* Chat bubbles */
+    
+    /* Chat Bubbles */
     .bubble {
       margin-bottom: 12px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      max-width: 75%;
+      padding: 14px 18px;
+      border-radius: 16px;
+      max-width: 80%;
       line-height: 1.4;
       word-wrap: break-word;
-      opacity: 0;           /* Start hidden for fade-in animation */
-      transform: translateY(5px);
-      animation: fadeInUp 0.3s forwards; 
+      font-size: 1rem;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeInUp 0.3s forwards;
     }
-    .bubble.user {
-      background-color: #2563eb;
-      margin-left: auto;
-      color: #fff;
-      text-align: right;
-    }
-    .bubble.bot {
-      background-color: #374151;
-      margin-right: auto;
-    }
-    /* Fade-in + slight upward movement */
     @keyframes fadeInUp {
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-
-    /* Bottom bar: model selector + input area */
+    .bubble.user {
+      background-color: rgba(37, 99, 235, 0.9);
+      margin-left: auto;
+      text-align: right;
+    }
+    .bubble.bot {
+      background-color: rgba(29, 41, 57, 0.9);
+      margin-right: auto;
+    }
+    
+    /* Bottom Controls */
     .bottom-controls {
       flex-shrink: 0;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .model-select {
-      background: #1d2939;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px;
-      font-size: 0.9rem;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
     }
     .input-row {
+      flex: 1;
       display: flex;
-      background-color: #1d2939;
-      border-radius: 9999px;
       align-items: center;
+      background-color: rgba(29, 41, 57, 0.95);
+      border-radius: 9999px;
       padding: 8px 12px;
     }
     .input-row input {
@@ -132,7 +142,7 @@
       color: #fff;
       font-size: 1rem;
       outline: none;
-      margin-right: 8px;
+      padding: 8px;
     }
     .send-btn {
       background: none;
@@ -141,9 +151,94 @@
       cursor: pointer;
       font-size: 1.3rem;
     }
+    
+    /* Custom Model Selector */
+    .model-selector {
+      position: relative;
+    }
+    /* Glowing AI star button */
+    .model-btn {
+      background: linear-gradient(45deg, #ff0080, #ff8c00);
+      border: none;
+      border-radius: 50%;
+      padding: 10px;
+      cursor: pointer;
+      animation: glow 2s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @keyframes glow {
+      0% {
+        box-shadow: 0 0 5px rgba(255,255,255,0.5);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(255,255,255,1);
+        transform: scale(1.05);
+      }
+      100% {
+        box-shadow: 0 0 5px rgba(255,255,255,0.5);
+        transform: scale(1);
+      }
+    }
+    .model-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: #fff;
+    }
+    /* Floating Model Panel */
+    .model-panel {
+      position: absolute;
+      bottom: 50px;
+      right: 0;
+      background: rgba(29,41,57,0.95);
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeIn 0.3s ease;
+      z-index: 10;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .model-panel.hidden {
+      display: none;
+    }
+    .model-option {
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      font-size: 0.9rem;
+    }
+    .model-option:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    /* Responsive adjustments for mobile */
+    @media (max-width: 480px) {
+      .model-panel {
+        right: 50%;
+        transform: translateX(50%);
+        bottom: 60px;
+      }
+      .big-greeting {
+        font-size: 2rem;
+      }
+    }
   </style>
-
-  <!-- Puter.js -->
+  
+  <!-- Puter.js library -->
   <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
@@ -153,117 +248,144 @@
     <div class="icon-btn share-icon"></div>
   </div>
 
-  <!-- Chat Area -->
-  <div class="chat-area">
-    <div class="messages" id="messagesContainer">
-      <!-- We'll insert chat bubbles dynamically here -->
-    </div>
-
-    <!-- Bottom Controls: Model Selector + Input Row -->
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Greeting that vanishes after the first message -->
+    <div id="bigGreeting" class="big-greeting">Hello, how can I help you?</div>
+    
+    <!-- Chat Messages -->
+    <div id="messagesContainer" class="messages"></div>
+    
+    <!-- Bottom Controls -->
     <div class="bottom-controls">
-      <select id="modelSelect" class="model-select">
-        <option value="gpt-4o-mini">GPT-4o Mini</option>
-        <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-        <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
-        <option value="llama">Llama</option>
-        <option value="deepseek-chat">DeepSeek Chat</option>
-        <option value="deepseek-reasoner">DeepSeek Reasoner</option>
-        <option value="o3-mini">o3-mini</option>
-        <option value="gemini-2-0-flash">Gemini 2.0 Flash</option>
-        <option value="dall-e-3">DALL·E 3 (Image)</option>
-      </select>
-
+      <!-- Custom Model Selector with AI Star Button -->
+      <div class="model-selector">
+        <button id="modelBtn" class="model-btn" title="Select Model">
+          <!-- Star Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 18 5.8 21 7 14 2 9.3 9 8.5 12 2"></polygon>
+          </svg>
+        </button>
+        <!-- Floating Panel with Model Options -->
+        <div id="modelPanel" class="model-panel hidden">
+          <div class="model-option" data-model="gpt-4o-mini">GPT-4o Mini</div>
+          <div class="model-option" data-model="claude-3-5-sonnet">Claude 3.5 Sonnet</div>
+          <div class="model-option" data-model="claude-3-7-sonnet">Claude 3.7 Sonnet</div>
+          <div class="model-option" data-model="llama">Llama</div>
+          <div class="model-option" data-model="deepseek-chat">DeepSeek Chat</div>
+          <div class="model-option" data-model="deepseek-reasoner">DeepSeek Reasoner</div>
+          <div class="model-option" data-model="o3-mini">o3-mini</div>
+          <div class="model-option" data-model="gemini-2-0-flash">Gemini 2.0 Flash</div>
+          <div class="model-option" data-model="dall-e-3">DALL·E 3 (Image)</div>
+        </div>
+      </div>
+      
+      <!-- Input Row -->
       <div class="input-row">
-        <input 
-          type="text" 
-          id="userInput" 
-          placeholder="Message Copilot..." 
-          autocomplete="off"
-        />
+        <input type="text" id="userInput" placeholder="Type a message..." autocomplete="off" />
         <button id="sendBtn" class="send-btn">➤</button>
       </div>
     </div>
   </div>
-
+  
   <script>
+    // DOM Elements
+    const bigGreeting = document.getElementById('bigGreeting');
     const messagesContainer = document.getElementById('messagesContainer');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
-    const modelSelect = document.getElementById('modelSelect');
-
-    // Start with a greeting from the bot
+    
+    // Custom Model Selector Elements
+    const modelBtn = document.getElementById('modelBtn');
+    const modelPanel = document.getElementById('modelPanel');
+    let selectedModel = "gpt-4o-mini"; // default
+    
+    // Conversation storage
     let conversation = [];
-    addBubble('bot', "Hi, I am ZeQta Copilot. How can I help you today?");
-
-    // Send message on button click or Enter
+    let firstMessageSent = false;
+    
+    // Toggle model panel when star button is clicked
+    modelBtn.addEventListener('click', () => {
+      modelPanel.classList.toggle('hidden');
+    });
+    
+    // Set selected model when an option is clicked
+    document.querySelectorAll('.model-option').forEach(option => {
+      option.addEventListener('click', () => {
+        selectedModel = option.getAttribute('data-model');
+        modelPanel.classList.add('hidden');
+        // Optionally, update the modelBtn tooltip or appearance here
+      });
+    });
+    
+    // Send message on button click or Enter key
     sendBtn.addEventListener('click', sendMessage);
     userInput.addEventListener('keypress', e => {
       if (e.key === 'Enter') sendMessage();
     });
-
+    
     function sendMessage() {
       const text = userInput.value.trim();
       if (!text) return;
       
-      // Show user message
+      // Hide greeting after the first message
+      if (!firstMessageSent) {
+        bigGreeting.style.opacity = '0';
+        bigGreeting.style.maxHeight = '0';
+        firstMessageSent = true;
+      }
+      
+      // Append user's message
       addBubble('user', text);
       conversation.push({ role: 'user', content: text });
       userInput.value = '';
-
+      
       // Temporary "Thinking..." bubble
-      const tempMsg = addBubble('bot', 'Thinking...');
-
-      // Determine model
-      const selectedModel = modelSelect.value;
-
+      const thinkingBubble = addBubble('bot', 'Thinking...');
+      
+      // Use Puter.js API based on the selected model
       if (selectedModel === 'dall-e-3') {
-        // Image generation
         puter.ai.image(text, { model: selectedModel })
           .then(imageUrl => {
-            // Remove "Thinking..." bubble
-            messagesContainer.removeChild(tempMsg);
-            // Insert an image bubble
-            const imgBubble = document.createElement('div');
-            imgBubble.classList.add('bubble', 'bot');
+            messagesContainer.removeChild(thinkingBubble);
+            const imageBubble = document.createElement('div');
+            imageBubble.classList.add('bubble', 'bot');
             
             const imgElem = document.createElement('img');
             imgElem.src = imageUrl;
-            imgElem.alt = "Generated Image";
+            imgElem.alt = 'Generated Image';
             imgElem.style.maxWidth = '100%';
             imgElem.style.borderRadius = '8px';
-
-            imgBubble.appendChild(imgElem);
-            messagesContainer.appendChild(imgBubble);
+            
+            imageBubble.appendChild(imgElem);
+            messagesContainer.appendChild(imageBubble);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
             conversation.push({ role: 'bot', content: '[Image generated]' });
           })
           .catch(err => {
-            messagesContainer.removeChild(tempMsg);
+            messagesContainer.removeChild(thinkingBubble);
             addBubble('bot', 'Error: ' + err.message);
           });
       } else {
-        // Text generation
         puter.ai.chat(text, { model: selectedModel })
           .then(response => {
-            messagesContainer.removeChild(tempMsg);
+            messagesContainer.removeChild(thinkingBubble);
             const botResponse = response.message.content;
             addBubble('bot', botResponse);
             conversation.push({ role: 'bot', content: botResponse });
           })
           .catch(err => {
-            messagesContainer.removeChild(tempMsg);
+            messagesContainer.removeChild(thinkingBubble);
             addBubble('bot', 'Error: ' + err.message);
           });
       }
     }
-
-    // Helper to add a bubble to the chat
-    function addBubble(sender, text) {
+    
+    // Helper function to add a chat bubble
+    function addBubble(sender, content) {
       const bubble = document.createElement('div');
       bubble.classList.add('bubble', sender);
-      // If text is multiline, preserve line breaks
-      bubble.textContent = text;
+      bubble.textContent = content;
       messagesContainer.appendChild(bubble);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       return bubble;
